@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Sales Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #chartContainer {
+      max-height: 500px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+<h1>Movie Sales Analysis</h1>
+
+<form id="dateForm">
+  <label for="saleDate">Select a Date:</label>
+  <input type="date" id="saleDate" name="saleDate" required>
+  <button type="submit">Submit</button>
+</form>
+
+<h2>Highest Sales Result</h2>
+<p id="result">Select a date to view results</p>
+
+<h2>Monthly Sales Chart</h2>
+<div id="chartContainer">
+  <canvas id="salesChart" width="400" height="200"></canvas>
+</div>
+
+<script>
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  let salesChart = null;
+
+  document.getElementById('dateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const saleDate = document.getElementById('saleDate').value;
+
+    const response = await fetch(`/get-sales?saleDate=${saleDate}`);
+    const data = await response.json();
+
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    document.getElementById('result').textContent = `Theater: ${data.theater}, Tickets Sold: ${data.tickets_sold}`;
+
+    const backgroundColors = data.chart_data.dates.map(date =>
+            date === saleDate ? 'rgba(255, 99, 132, 0.6)' : 'rgba(54, 162, 235, 0.6)'
+    );
+    const borderColors = data.chart_data.dates.map(date =>
+            date === saleDate ? 'rgba(255, 99, 132, 1)' : 'rgba(54, 162, 235, 1)'
+    );
+
+    if (salesChart) {
+      salesChart.destroy();
+    }
+
+    salesChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.chart_data.dates,
+        datasets: [{
+          label: 'Tickets Sold',
+          data: data.chart_data.sales,
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Tickets Sold'
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>
