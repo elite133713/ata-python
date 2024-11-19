@@ -59,7 +59,7 @@ Schema dump in root folder `dump.sql`
 **Clone the Repository**:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/elite133713/ata-python.git
 cd ata-python
 ```
 
